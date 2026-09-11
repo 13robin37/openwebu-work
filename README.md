@@ -29,8 +29,10 @@ The goal is simple: keep each extension portable, documented, and safe to review
 │   ├── email-composer/
 │   │   ├── README.md
 │   │   ├── CHANGELOG.md
+│   │   ├── SOURCE_SHA256
 │   │   ├── email_composer.py
-│   │   └── test_email_composer.py
+│   │   ├── test_email_composer.py
+│   │   └── unpack_source.py
 │   └── ragflow/
 │       ├── README.md
 │       └── ragflow.py
