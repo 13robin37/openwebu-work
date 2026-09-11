@@ -1,4 +1,6 @@
 import asyncio
+import base64
+import gzip
 import importlib.util
 from pathlib import Path
 
@@ -8,6 +10,14 @@ spec = importlib.util.spec_from_file_location("email_composer", MODULE_PATH)
 module = importlib.util.module_from_spec(spec)
 assert spec and spec.loader
 spec.loader.exec_module(module)
+
+
+def _implementation_source() -> str:
+    """Return the actual packaged implementation, not only the distribution wrapper."""
+    payload = getattr(module, "_PAYLOAD", None)
+    if payload:
+        return gzip.decompress(base64.b64decode(payload)).decode("utf-8")
+    return MODULE_PATH.read_text(encoding="utf-8")
 
 
 def test_subject_header_cleaning():
@@ -63,14 +73,16 @@ def test_message_level_embed_is_emitted():
     assert "id=\"formatBar\"" in html
 
 
-def test_public_source_has_no_deployment_branding():
-    source = MODULE_PATH.read_text(encoding="utf-8").lower()
+def test_public_payload_has_no_deployment_branding_or_hard_version_pin():
+    source = _implementation_source().lower()
     forbidden = [
         "univ-evry",
         "université d'évry",
         "universite d'evry",
         "#0a3d67",
         "#00b3c3",
+        "required_open_webui_version",
+        "0.11.3+",
     ]
     for marker in forbidden:
         assert marker not in source
