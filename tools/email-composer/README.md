@@ -40,6 +40,22 @@ If you need actual server-side sending, implement a separate authenticated mail 
 
 The Tool has no additional Python package requirement beyond packages already used by Open WebUI for Tools (`fastapi` and `pydantic`).
 
+## Portable single-file build
+
+Open WebUI imports Workspace Tools as one Python file. The public `email_composer.py` is therefore shipped as a portable single-file distribution. Its reviewed implementation, including the embedded HTML/CSS/JavaScript UI, is gzip-compressed and Base64-encoded inside the file, then unpacked locally with Python standard-library modules when the Tool loads.
+
+This packaging is **not encryption or obfuscation for secrecy**. It keeps a large Rich UI implementation in one pasteable file and performs no network download.
+
+To inspect the exact readable implementation without executing the Tool:
+
+```bash
+python unpack_source.py
+sha256sum email_composer_readable.py
+cat SOURCE_SHA256
+```
+
+The expected source digest is recorded in [`SOURCE_SHA256`](SOURCE_SHA256). `unpack_source.py` parses the distribution file with Python's AST and extracts `_PAYLOAD` without importing or executing the Tool.
+
 ## Rich UI rendering
 
 The primary rendering path emits a message-level `embeds` event. This keeps the user-facing card independent from grouped native/reasoning tool-call presentation.
@@ -227,9 +243,11 @@ From this directory:
 ```bash
 python -m py_compile email_composer.py
 pytest -q test_email_composer.py
+python unpack_source.py
+sha256sum -c SOURCE_SHA256
 ```
 
-The repository workflow also runs these checks for changes to this Tool.
+The repository workflow also runs compile and regression checks for changes to this Tool.
 
 ## Known limitations
 
@@ -245,8 +263,10 @@ The repository workflow also runs these checks for changes to this Tool.
 tools/email-composer/
 ├── README.md
 ├── CHANGELOG.md
+├── SOURCE_SHA256
 ├── email_composer.py
-└── test_email_composer.py
+├── test_email_composer.py
+└── unpack_source.py
 ```
 
 ## License
