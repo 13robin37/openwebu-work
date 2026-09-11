@@ -29,5 +29,12 @@ jobs:
       - name: Compile Tool
         run: python -m py_compile tools/email-composer/email_composer.py
 
-      - name: Run tests
+      - name: Run regression tests
         run: pytest -q tools/email-composer/test_email_composer.py
+
+      - name: Verify packaged readable source
+        working-directory: tools/email-composer
+        run: |
+          python unpack_source.py
+          sha256sum -c SOURCE_SHA256
+          python -m py_compile email_composer_readable.py
