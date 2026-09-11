@@ -19,8 +19,10 @@ tools/
 ├── email-composer/
 │   ├── README.md
 │   ├── CHANGELOG.md
+│   ├── SOURCE_SHA256
 │   ├── email_composer.py
-│   └── test_email_composer.py
+│   ├── test_email_composer.py
+│   └── unpack_source.py
 └── ragflow/
     ├── README.md
     └── ragflow.py
