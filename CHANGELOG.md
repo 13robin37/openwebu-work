@@ -2,6 +2,12 @@
 
 This repository contains independently versioned Open WebUI extensions. Plugin-specific release notes live next to each implementation when they need more detail.
 
+## 2026-09-11
+
+### Rich Email Composer 1.0.0
+
+Added a portable Rich UI email drafting Tool with direct recipient, subject, and body editing, AI-assisted revision prompts, contextual formatting controls, recipient and domain validation, light/dark/mobile support, rich/plain copy, mail-client handoff, multipart `.eml` export, large-mailto fallback, message-level embed rendering, tests, CI, and deployment-neutral styling. The public Tool contains no university-specific names, domains, logos, or color theme and does not hard-code an Open WebUI `0.11.x` version requirement.
+
 ## 2026-08-28
 
 ### Study Mode 1.1.0
