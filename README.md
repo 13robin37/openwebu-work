@@ -8,6 +8,7 @@ The goal is simple: keep each extension portable, documented, and safe to review
 
 | Extension | Type | Version | Status | Purpose |
 | --- | --- | --- | --- | --- |
+| [Rich Email Composer](tools/email-composer/) | Tool | 1.0.0 | Stable | Interactive Rich UI email drafting with direct editing, AI-assisted revisions, contextual formatting, recipient validation, copy, `.eml` export, and mail-client handoff |
 | [Study Mode](functions/filters/study-mode/) | Filter | 1.1.0 | Stable | Guided learning, Socratic tutoring, adaptive pacing, native `ask_user`, multilingual interactive quizzes, LaTeX/keyboard/fullscreen/export options, and local-model compatibility hardening |
 | [Quick Actions](functions/actions/quick-actions/) | Action | 3.0.1 | Stable | Compact context-aware response transformations, Humanize actions, verification, creation workflows, English/French UI, and user/team custom actions |
 | [RAGFlow Advanced Connector](tools/ragflow/) | Tool | 3.0.0 | Stable | RAGFlow retrieval, dataset discovery, document search, and configurable retrieval controls |
@@ -25,6 +26,11 @@ The goal is simple: keep each extension portable, documented, and safe to review
 │
 ├── tools/
 │   ├── README.md
+│   ├── email-composer/
+│   │   ├── README.md
+│   │   ├── CHANGELOG.md
+│   │   ├── email_composer.py
+│   │   └── test_email_composer.py
 │   └── ragflow/
 │       ├── README.md
 │       └── ragflow.py
@@ -72,7 +78,9 @@ Each extension has a dedicated README with its setup steps. In general:
 
 ## Compatibility
 
-The repository follows current Open WebUI plugin APIs. Individual extensions declare their own compatibility requirements.
+The repository follows current Open WebUI plugin APIs. Individual extensions declare their own compatibility requirements when a hard minimum is necessary.
+
+Rich Email Composer intentionally does not hard-code an Open WebUI `0.11.x` version requirement in its public Tool metadata. It relies on Rich UI embed/event capabilities described in its own README.
 
 Study Mode and Quick Actions currently declare **Open WebUI 0.11.1 or newer** because they use current Function event APIs and interactive browser-side UI capabilities.
 
@@ -103,6 +111,7 @@ Recommended Git tag format:
 Examples:
 
 ```text
+email-composer-v1.0.0
 study-mode-v1.1.0
 quick-actions-v3.0.1
 ragflow-v3.0.0
