@@ -11,6 +11,7 @@ The goal is simple: keep each extension portable, documented, and safe to review
 | [Rich Email Composer](tools/email-composer/) | Tool | 1.0.0 | Stable | Interactive Rich UI email drafting with direct editing, AI-assisted revisions, contextual formatting, recipient validation, copy, `.eml` export, and mail-client handoff |
 | [Study Mode](functions/filters/study-mode/) | Filter | 1.1.0 | Stable | Guided learning, Socratic tutoring, adaptive pacing, native `ask_user`, multilingual interactive quizzes, LaTeX/keyboard/fullscreen/export options, and local-model compatibility hardening |
 | [Quick Actions](functions/actions/quick-actions/) | Action | 3.0.1 | Stable | Compact context-aware response transformations, Humanize actions, verification, creation workflows, English/French UI, and user/team custom actions |
+| [Secure Dynamic Onboarding](functions/events/secure-onboarding/) | Event | 9.1.0 | Stable | Bilingual, permission-aware onboarding chat with guided interface tutorials, a feature library, safe test rollout, in-place updates, and batch deployment |
 | [RAGFlow Advanced Connector](tools/ragflow/) | Tool | 3.0.0 | Stable | RAGFlow retrieval, dataset discovery, document search, and configurable retrieval controls |
 
 ## Repository structure
@@ -56,7 +57,12 @@ The goal is simple: keep each extension portable, documented, and safe to review
     │       ├── quick-actions-icon.svg
     │       └── quick_actions.py
     └── events/
-        └── README.md
+        ├── README.md
+        └── secure-onboarding/
+            ├── README.md
+            ├── secure_onboarding.py
+            ├── smoke_secure_onboarding.mjs
+            └── test_secure_onboarding.py
 ```
 
 ## Extension types
@@ -85,6 +91,8 @@ The repository follows current Open WebUI plugin APIs. Individual extensions dec
 Rich Email Composer intentionally does not hard-code an Open WebUI `0.11.x` version requirement in its public Tool metadata. It relies on Rich UI embed/event capabilities described in its own README.
 
 Study Mode and Quick Actions currently declare **Open WebUI 0.11.1 or newer** because they use current Function event APIs and interactive browser-side UI capabilities.
+
+Secure Dynamic Onboarding declares **Open WebUI 0.11.3 or newer** because it uses current Event Function hooks, Rich UI embeds, effective permission catalogs, Notes, Channels, Calendar, Automations, and current chat storage APIs.
 
 ## Security
 
@@ -117,6 +125,7 @@ email-composer-v1.0.0
 study-mode-v1.1.0
 quick-actions-v3.0.1
 ragflow-v3.0.0
+secure-onboarding-v9.1.0
 ```
 
 See [RELEASING.md](RELEASING.md) for the release checklist, tag convention, and suggested GitHub repository topics.

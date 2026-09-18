@@ -2,6 +2,12 @@
 
 This repository contains independently versioned Open WebUI extensions. Plugin-specific release notes live next to each implementation when they need more detail.
 
+## 2026-09-18
+
+### Secure Dynamic Onboarding 9.1.0
+
+Added a bilingual, role-aware Event Function that creates and maintains one persistent onboarding chat per eligible user. The release includes an interactive guided tour, a permission-filtered feature library, exact composer and navigation tutorials, Notes, Folders, Channels, Calendar and Automations guidance, safe test-user rollout, signup and first-login delivery, idempotent batch deployment, in-place guide revisions, deleted-guide handling, Redis locking, restrictive iframe CSP, disclosure controls, Python tests, and a full DOM smoke test.
+
 ## 2026-09-11
 
 ### Rich Email Composer 1.0.0
