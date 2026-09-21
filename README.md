@@ -11,7 +11,7 @@ The goal is simple: keep each extension portable, documented, and safe to review
 | [Rich Email Composer](tools/email-composer/) | Tool | 1.0.0 | Stable | Interactive Rich UI email drafting with direct editing, AI-assisted revisions, contextual formatting, recipient validation, copy, `.eml` export, and mail-client handoff |
 | [Study Mode](functions/filters/study-mode/) | Filter | 1.1.0 | Stable | Guided learning, Socratic tutoring, adaptive pacing, native `ask_user`, multilingual interactive quizzes, LaTeX/keyboard/fullscreen/export options, and local-model compatibility hardening |
 | [Quick Actions](functions/actions/quick-actions/) | Action | 3.0.1 | Stable | Compact context-aware response transformations, Humanize actions, verification, creation workflows, English/French UI, and user/team custom actions |
-| [Secure Dynamic Onboarding](functions/events/secure-onboarding/) | Event | 9.1.0 | Stable | Bilingual, permission-aware onboarding chat with guided interface tutorials, a feature library, safe test rollout, in-place updates, and batch deployment |
+| [Secure Dynamic Onboarding](functions/events/secure-onboarding/) | Event | 9.2.0 | Stable | Multilingual, permission-aware onboarding chat with contributor locale catalogs, guided interface tutorials, a feature library, safe rollout, and batch deployment |
 | [RAGFlow Advanced Connector](tools/ragflow/) | Tool | 3.0.0 | Stable | RAGFlow retrieval, dataset discovery, document search, and configurable retrieval controls |
 
 ## Repository structure
@@ -62,8 +62,13 @@ The goal is simple: keep each extension portable, documented, and safe to review
         └── secure-onboarding/
             ├── README.md
             ├── CHANGELOG.md
+            ├── locales/
+            │   ├── README.md
+            │   ├── en.json
+            │   └── fr.json
             ├── secure_onboarding.py
             ├── smoke_secure_onboarding.mjs
+            ├── sync_locales.py
             └── test_secure_onboarding.py
 ```
 
@@ -127,7 +132,7 @@ email-composer-v1.0.0
 study-mode-v1.1.0
 quick-actions-v3.0.1
 ragflow-v3.0.0
-secure-onboarding-v9.1.0
+secure-onboarding-v9.2.0
 ```
 
 See [RELEASING.md](RELEASING.md) for the release checklist, tag convention, and suggested GitHub repository topics.
@@ -148,7 +153,7 @@ Every extension also keeps its own changelog beside the implementation:
 | RAGFlow Advanced Connector | [tools/ragflow/CHANGELOG.md](tools/ragflow/CHANGELOG.md) | `ragflow-v3.0.0` |
 | Study Mode | [functions/filters/study-mode/CHANGELOG.md](functions/filters/study-mode/CHANGELOG.md) | `study-mode-v1.1.0` |
 | Quick Actions | [functions/actions/quick-actions/CHANGELOG.md](functions/actions/quick-actions/CHANGELOG.md) | `quick-actions-v3.0.1` |
-| Secure Dynamic Onboarding | [functions/events/secure-onboarding/CHANGELOG.md](functions/events/secure-onboarding/CHANGELOG.md) | `secure-onboarding-v9.1.0` |
+| Secure Dynamic Onboarding | [functions/events/secure-onboarding/CHANGELOG.md](functions/events/secure-onboarding/CHANGELOG.md) | `secure-onboarding-v9.2.0` |
 
 ## License
 

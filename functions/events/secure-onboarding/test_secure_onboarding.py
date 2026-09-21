@@ -3,7 +3,7 @@ import json
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
 
 MODULE_PATH = Path(__file__).with_name("secure_onboarding.py")
@@ -38,6 +38,11 @@ class SecureOnboardingTests(unittest.IsolatedAsyncioTestCase):
                 "is_admin": False,
             },
             "links": {},
+            "localization": {
+                "supported": ["fr", "en"],
+                "names": {"fr": "Français", "en": "English"},
+                "translations": {},
+            },
             "selected_model_id": "model-1",
             "available": {
                 "models": True,
@@ -56,7 +61,7 @@ class SecureOnboardingTests(unittest.IsolatedAsyncioTestCase):
 
     def test_metadata_and_safe_defaults(self):
         source = MODULE_PATH.read_text(encoding="utf-8")
-        self.assertIn("version: 9.1.0", source)
+        self.assertIn("version: 9.2.0", source)
         self.assertIn("required_open_webui_version: 0.11.3", source)
         self.assertIn("author: CallSohail", source)
         self.assertFalse(self.event.valves.production_enabled)
@@ -89,6 +94,30 @@ class SecureOnboardingTests(unittest.IsolatedAsyncioTestCase):
         payload = rendered.split('<script type="application/json" id="snapshot">', 1)[1].split("</script>", 1)[0]
         decoded = json.loads(payload)
         self.assertNotIn("_enabled", decoded)
+
+    def test_non_admin_render_strips_admin_tutorial_source(self):
+        snapshot = self.base_snapshot()
+        regular_html = self.event._render_html(snapshot)
+        self.assertNotIn("Administrator area", regular_html)
+        self.assertNotIn("Admins only: test a model", regular_html)
+        self.assertNotIn("/*__ADMIN_ONLY_START__*/", regular_html)
+
+        snapshot["ui"]["is_admin"] = True
+        admin_html = self.event._render_html(snapshot)
+        self.assertIn("Administrator area", admin_html)
+        self.assertIn("Admins only: test a model", admin_html)
+        self.assertNotIn("/*__ADMIN_ONLY_START__*/", admin_html)
+
+    def test_non_admin_locale_payload_excludes_admin_only_messages(self):
+        admin_key = MODULE.ADMIN_LOCALE_KEYS[0]
+        public_key = "Bonjour\x1fHello"
+        translations = {"es": {admin_key: "Administración", public_key: "Hola"}}
+        with patch.object(MODULE, "EXTRA_LOCALE_TRANSLATIONS", translations):
+            regular = self.event._locale_translations(False)
+            admin = self.event._locale_translations(True)
+        self.assertNotIn(admin_key, regular["es"])
+        self.assertEqual(regular["es"][public_key], "Hola")
+        self.assertEqual(admin["es"][admin_key], "Administración")
 
     def test_only_clean_https_links_are_allowed(self):
         self.assertEqual(self.event._safe_http_url("javascript:alert(1)"), "")
@@ -212,6 +241,16 @@ class SecureOnboardingTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(self.event._title(snapshot), "👋 Welcome to Test Assistant")
         snapshot["ui"]["default_language"] = "fr"
         self.assertEqual(self.event._title(snapshot), "👋 Bienvenue sur Test Assistant")
+        snapshot["ui"]["default_language"] = "es"
+        self.assertEqual(self.event._title(snapshot), "👋 Welcome to Test Assistant")
+        self.assertEqual(self.event._fallback_text(snapshot), MODULE.FALLBACK_TEXT_EN)
+
+    def test_platform_locale_uses_exact_then_base_language(self):
+        user = SimpleNamespace(settings={"ui": {"language": "es-ES"}})
+        with patch.object(MODULE, "SUPPORTED_LOCALES", ("fr", "en", "es")):
+            self.assertEqual(self.event._language_for(user), "es")
+        user.settings["ui"]["language"] = "pt-BR"
+        self.assertEqual(self.event._language_for(user), "fr")
 
     def test_public_resource_metadata_is_limited(self):
         tool = {

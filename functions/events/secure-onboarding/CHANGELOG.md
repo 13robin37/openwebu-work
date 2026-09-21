@@ -5,6 +5,26 @@ This project follows [Semantic Versioning](https://semver.org/).
 
 Released as `secure-onboarding-v<version>`. See [RELEASING.md](../../../RELEASING.md) for the release process.
 
+## [9.2.0] - 2026-09-21
+
+### Added
+
+- Contributor-ready English and French JSON catalogs with stable message IDs.
+- A deterministic `sync_locales.py` workflow that validates catalogs and embeds additional languages into the self-contained Open WebUI Function.
+- Dynamic language buttons and automatic exact/base locale matching from `user.settings.ui.language`.
+- CI checks for stale, incomplete, malformed, or incorrectly named locale catalogs.
+- Tests that compare regular-user and administrator rendering boundaries.
+
+### Security
+
+- Administrator-only tutorial definitions are removed from regular-user HTML before delivery instead of being hidden only by client-side conditions.
+- Administrator-only translated strings are excluded from regular-user localization payloads.
+
+### Changed
+
+- The guide is now prepared for community languages without requiring translators to edit application logic.
+- Template revision increased to 10 so existing guides refresh in place.
+
 ## [9.1.0] - 2026-09-18
 
 First version published in this repository.

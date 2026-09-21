@@ -2,6 +2,12 @@
 
 This repository contains independently versioned Open WebUI extensions. Plugin-specific release notes live next to each implementation when they need more detail.
 
+## 2026-09-21
+
+### Secure Dynamic Onboarding 9.2.0
+
+Added contributor-ready JSON locale catalogs, a documented translation workflow, strict catalog validation, automatic exact/base matching with the Open WebUI interface language, and dynamic language-selector buttons. English and French remain built in, unsupported languages fall back safely to English, and additional catalogs are compiled into the portable single-file Event Function. Regular-user output now also removes administrator-only tutorial source and administrator-only translations on the server before the Rich UI payload is returned.
+
 ## 2026-09-18
 
 ### Documentation and release metadata

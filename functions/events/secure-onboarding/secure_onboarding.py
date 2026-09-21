@@ -3,9 +3,9 @@ title: Secure Dynamic Onboarding Rich UI
 author: CallSohail
 author_url: https://github.com/CallSohail/openwebu-work
 funding_url: https://github.com/CallSohail/openwebu-work
-version: 9.1.0
+version: 9.2.0
 required_open_webui_version: 0.11.3
-description: Bilingual (FR/EN), role-aware interactive onboarding guide and tutorial for Open WebUI. Delivered once per user (new sign-ups, first login, or pushed to everyone), updated in place when content or permissions change, and never shows a feature the user is not allowed to use.
+description: Multilingual, role-aware interactive onboarding guide and tutorial for Open WebUI. Delivered once per user (new sign-ups, first login, or pushed to everyone), updated in place when content or permissions change, and never shows a feature the user is not allowed to use.
 """
 
 from __future__ import annotations
@@ -28,9 +28,16 @@ log = logging.getLogger("openwebui.secure_onboarding")
 log.setLevel(logging.INFO)
 
 ONBOARDING_VERSION = 5
-TEMPLATE_REVISION = 9
+TEMPLATE_REVISION = 10
 SETTINGS_KEY = "secure_onboarding"
 TEST_SETTINGS_KEY = "secure_onboarding_test"
+
+# BEGIN GENERATED LOCALE DATA
+SUPPORTED_LOCALES = ('fr', 'en')
+LOCALE_NAMES = {"en": "English", "fr": "Français"}
+EXTRA_LOCALE_TRANSLATIONS = {}
+ADMIN_LOCALE_KEYS = ('Admin Panel › Users › Groups pour les permissions.\x1fAdmin Panel › Users › Groups for permissions.', 'Administrateurs\x1fAdministrators', 'Administration\x1fAdministration', 'Choisissez un modèle, un prompt système et envoyez.\x1fPick a model, a system prompt and send.', 'Espace administrateur\x1fAdministrator area', 'Modifiez les permissions sur un groupe de test avant de les appliquer à tous.\x1fChange permissions on a test group before applying them to everyone.', 'Ouvrez Playground.\x1fOpen Playground.', 'Réservé aux administrateurs\x1fAdmins only', 'Réservé aux administrateurs : tester un modèle avec ses paramètres bruts, hors conversation.\x1fAdmins only: test a model with raw parameters, outside a chat.', 'Réservé aux administrateurs : utilisateurs, groupes et permissions, réglages, évaluations.\x1fAdmins only: users, groups and permissions, settings, evaluations.', 'Tester un modèle avec ses paramètres, hors conversation.\x1fTest a model with its parameters, outside a chat.', 'Tester un modèle en direct avec prompt système et paramètres, sans créer de conversation.\x1fTest a model live with system prompt and parameters, without creating a chat.', 'Testez chaque changement sur un compte non administrateur.\x1fTest every change with a non-admin account.', 'Utilisateurs, groupes et permissions (qui voit Notes, Calendar, Automations…), réglages généraux, évaluations des modèles à partir des avis.\x1fUsers, groups and permissions (who sees Notes, Calendar, Automations…), general settings, model evaluations from feedback.', 'Utilisateurs, groupes, permissions, réglages et évaluations.\x1fUsers, groups, permissions, settings and evaluations.', 'Vous voyez ce chapitre car votre compte est administrateur.\x1fYou see this chapter because your account is an administrator.')
+# END GENERATED LOCALE DATA
 
 FALLBACK_TEXT_FR = """## Bienvenue
 
@@ -97,7 +104,8 @@ button:focus-visible{outline:2px solid var(--turq);outline-offset:2px;border-rad
 .g-tab:hover{color:#fff;background:rgba(255,255,255,.08)}
 .g-tab[aria-selected="true"]{color:#fff;box-shadow:inset 0 -2px 0 var(--jaune);border-radius:8px 8px 0 0}
 .g-right{display:flex;align-items:center;gap:6px;margin-left:auto}
-.g-lang{display:flex;padding:2px;border-radius:8px;background:rgba(255,255,255,.12)}
+.g-lang{display:flex;max-width:220px;padding:2px;overflow-x:auto;border-radius:8px;background:rgba(255,255,255,.12);scrollbar-width:none}
+.g-lang::-webkit-scrollbar{display:none}
 .g-lang button{padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;color:var(--head-muted)}
 .g-lang button[aria-pressed="true"]{background:#fff;color:var(--bleu)}
 .g-close{display:flex;align-items:center;gap:4px;padding:5px 8px;border-radius:8px;font-size:13px;color:var(--head-muted);transition:all 160ms ease-out}
@@ -474,12 +482,14 @@ button:focus-visible{outline:2px solid var(--turq);outline-offset:2px;border-rad
 (function(){
 'use strict';
 var data;try{data=JSON.parse(document.getElementById('snapshot').textContent);}catch(e){document.body.textContent='Onboarding data could not be loaded.';return;}
-var ui=data.ui||{},brand=data.brand||{},res=data.resources||{},acc=data.access||{};
+var ui=data.ui||{},brand=data.brand||{},res=data.resources||{},acc=data.access||{},loc=data.localization||{};
 var PRODUCT=brand.product||'AI Assistant',CHD={};
-var updated=false,REV=Number(data.guide_revision||1)+'.'+Number(data.template_revision||0),lang=ui.default_language==='en'?'en':'fr',tab='tour',cur=0,active=null,steps=[],chapters=[],sheet=null,toastT;
+var SUPPORTED=Array.isArray(loc.supported)&&loc.supported.length?loc.supported:['fr','en'],TRANSLATIONS=loc.translations||{},LOCALE_NAMES=loc.names||{};
+var initialLang=SUPPORTED.indexOf(ui.default_language)>=0?ui.default_language:(SUPPORTED.indexOf('en')>=0?'en':SUPPORTED[0]);
+var updated=false,REV=Number(data.guide_revision||1)+'.'+Number(data.template_revision||0),lang=initialLang,tab='tour',cur=0,active=null,steps=[],chapters=[],sheet=null,toastT;
 var KEY='openwebui-onboarding-v7-'+String(data.progress_scope||'local'),mem={};
 
-function L(fr,en){return lang==='fr'?fr:en;}
+function L(fr,en){if(lang==='fr')return fr;if(lang==='en')return en;var table=TRANSLATIONS[lang]||{},key=fr+'\u001f'+en;return Object.prototype.hasOwnProperty.call(table,key)?table[key]:en;}
 function E(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!==undefined)n.textContent=String(x);return n;}
 function add(p){for(var i=1;i<arguments.length;i++){var a=arguments[i];if(a===null||a===undefined||a===false)continue;p.appendChild(typeof a==='string'?document.createTextNode(a):a);}return p;}
 function on(k){return !!ui[k];}
@@ -646,9 +656,11 @@ function userMenu(){var m=E('div','m-user');
   if(ft('notes'))add(m,mItem('unotes','book','Notes'));
   if(ft('calendar'))add(m,mItem('ucalendar','calendar','Calendar'));
   if(ft('automations'))add(m,mItem('uauto','clock','Automations'));
+  /*__ADMIN_ONLY_START__*/
   if(ADMIN)add(m,mItem('uplay','code','Playground'));
   add(m,E('div','m-sep'));
   if(ADMIN)add(m,mItem('uadmin','user','Admin Panel'));
+  /*__ADMIN_ONLY_END__*/
   add(m,mItem('usettings','gear','Settings'),mItem('usignout','logout','Sign Out'));return m;}
 function calendarPage(){var g=E('div','m-calapp'),sd=E('div','m-calside'),mn=E('div','m-calmain');
   add(sd,A('newevent',add(E('div','m-newev'),I('plus'),E('span','','New Event'))));
@@ -839,8 +851,10 @@ function build(){
  if(ft('notes'))un.push(N('unotes','book','Notes',L('Ouvre vos Notes.','Opens your Notes.')));
  if(ft('calendar'))un.push(N('ucalendar','calendar','Calendar',L('Votre agenda personnel, avec rappels. Voir chapitre Calendrier.','Your personal calendar with reminders. See the Calendar chapter.')));
  if(ft('automations'))un.push(N('uauto','clock','Automations',L('Des demandes qui s’exécutent toutes seules à heure fixe. Voir chapitre Automatisations.','Requests that run on their own on a schedule. See the Automations chapter.')));
+ /*__ADMIN_ONLY_START__*/
  if(ADMIN)un.push(N('uplay','code','Playground',L('Réservé aux administrateurs : tester un modèle avec ses paramètres bruts, hors conversation.','Admins only: test a model with raw parameters, outside a chat.')));
  if(ADMIN)un.push(N('uadmin','user','Admin Panel',L('Réservé aux administrateurs : utilisateurs, groupes et permissions, réglages, évaluations.','Admins only: users, groups and permissions, settings, evaluations.')));
+ /*__ADMIN_ONLY_END__*/
  un.push(N('usettings','gear','Settings',L('Langue, thème, notifications, voix, personnalisation et mémoire.','Language, theme, notifications, voice, personalization and memory.')),N('usignout','logout','Sign Out',L('Déconnexion. Indispensable sur un ordinateur partagé.','Signs you out. Essential on a shared computer.')));
  if(on('show_user_menu'))S({title:L('Le menu utilisateur','The user menu'),desc:L('Il donne accès à vos espaces personnels et à vos réglages. Son contenu dépend de votre rôle.','It opens your personal spaces and settings. What you see depends on your role.'),stage:'center',start:'uhead',mock:userMenu,notes:un,
    tip:(ft('calendar')||ft('automations'))?L('Astuce : maintenez Maj (Shift) dans ce menu pour épingler Calendar ou Automations dans la barre latérale.','Tip: hold Shift in this menu to pin Calendar or Automations to the sidebar.'):null});
@@ -931,11 +945,13 @@ function build(){
    notes:[N('toolcall','check',L('Outil utilisé','Tool used'),L('Cette ligne montre l’outil lancé. Cliquez dessus pour voir ce qui a été envoyé et reçu.','This line shows the tool that ran. Click it to see what was sent and received.'))].concat(builtinCats().map(function(c){return N(c.a,c.i,c.k,c.t);})),
    info:L('Ces outils ne fonctionnent qu’avec les assistants configurés pour eux et selon vos permissions. Si rien ne se passe, choisissez un autre assistant.','These tools only work with assistants set up for them and within your permissions. If nothing happens, choose another assistant.'),
    warn:L('Pour les actions qui modifient quelque chose, réglez + › Tool Permissions sur Ask for approval.','For actions that change something, set + › Tool Permissions to Ask for approval.')});
+ /*__ADMIN_ONLY_START__*/
  if(ADMIN&&on('show_admin_section')){chapter(L('Administration','Administration'),'shield',L('Réservé aux administrateurs','Admins only'));
   S({title:L('Espace administrateur','Administrator area'),desc:L('Vous voyez ce chapitre car votre compte est administrateur.','You see this chapter because your account is an administrator.'),stage:'center',start:'uadmin',mock:userMenu,
    notes:[N('uadmin','user','Admin Panel',L('Utilisateurs, groupes et permissions (qui voit Notes, Calendar, Automations…), réglages généraux, évaluations des modèles à partir des avis.','Users, groups and permissions (who sees Notes, Calendar, Automations…), general settings, model evaluations from feedback.')),
      N('uplay','code','Playground',L('Tester un modèle en direct avec prompt système et paramètres, sans créer de conversation.','Test a model live with system prompt and parameters, without creating a chat.'))],
    warn:L('Modifiez les permissions sur un groupe de test avant de les appliquer à tous.','Change permissions on a test group before applying them to everyone.')});}
+ /*__ADMIN_ONLY_END__*/
  chapter(L('Bon usage','Good practice'),'shield',L('Règles essentielles','Essential rules'));
  if(on('show_safety'))S({title:L('Utiliser l’IA de façon responsable','Using AI responsibly'),desc:L('L’assistant peut se tromper avec assurance. Vous restez responsable de ce que vous en faites.','The assistant can be confidently wrong. You stay responsible for what you do with it.'),stage:'center',mock:doDont,notes:[],
    warn:L('Respectez les règles de votre organisation sur l’usage de l’IA.','Follow your organization’s rules on using AI.')});
@@ -970,8 +986,10 @@ function libItems(){var x=[];
  if(ft('automations'))F(G3,'automations','clock',L('Automatisations','Automations'),L('Demandes planifiées','Scheduled requests'),[L('Menu utilisateur','User menu'),'Automations'],L('Exécute une demande automatiquement (une fois, chaque heure, jour, semaine, mois). Chaque exécution crée une conversation.','Runs a request automatically (once, hourly, daily, weekly, monthly). Each run creates a chat.'),[L('Automations › Create.','Automations › Create.'),L('Title, Instructions, Model, Schedule, Folder.','Title, Instructions, Model, Schedule, Folder.'),L('Testez avec Run now, suivez les Execution logs.','Test with Run now, check Execution logs.')],L('Programme un résumé des actualités du secteur chaque lundi à 8h.','Schedule an industry news digest every Monday at 8am.'),L('Relisez les résultats : l’automatisation s’exécute sans vous.','Review results: the automation runs without you.'));
  F(G2,'builtin','spark',L('Outils intégrés','Built-in tools'),L('L’assistant agit pour vous','The assistant acts for you'),[L('Dans la conversation','In the chat')],L('Date et heure, recherche web, documents, mémoire, notes, anciennes conversations, calendrier, automatisations, images, code, listes de tâches : selon l’assistant et vos droits.','Date & time, web search, documents, memory, notes, past chats, calendar, automations, images, code, task lists: depending on the assistant and your rights.'),[L('Demandez en langage naturel.','Ask in plain language.'),L('Repérez la ligne « outil utilisé » et ouvrez-la pour vérifier.','Look for the “tool used” line and open it to check.'),L('Utilisez Ask for approval pour valider les actions.','Use Ask for approval to confirm actions.')],L('Retrouve dans mes notes ce que j’ai écrit sur le projet Alpha.','Find what I wrote about Project Alpha in my notes.'));
  F(G4,'status','smile','Update your status',L('Statut visible par les autres','Status shown to others'),[L('Menu utilisateur','User menu'),'Update your status'],L('Un emoji et un court message pour indiquer votre disponibilité.','An emoji and a short message to show your availability.'),[L('Cliquez sur votre nom.','Click your name.'),L('Update your status, choisissez un emoji et un texte.','Update your status, pick an emoji and text.')],null);
+ /*__ADMIN_ONLY_START__*/
  if(ADMIN){F(G4,'playground','code','Playground',L('Administrateurs','Administrators'),[L('Menu utilisateur','User menu'),'Playground'],L('Tester un modèle avec ses paramètres, hors conversation.','Test a model with its parameters, outside a chat.'),[L('Ouvrez Playground.','Open Playground.'),L('Choisissez un modèle, un prompt système et envoyez.','Pick a model, a system prompt and send.')],null);
   F(G4,'admin','shield','Admin Panel',L('Administrateurs','Administrators'),[L('Menu utilisateur','User menu'),'Admin Panel'],L('Utilisateurs, groupes, permissions, réglages et évaluations.','Users, groups, permissions, settings and evaluations.'),[L('Admin Panel › Users › Groups pour les permissions.','Admin Panel › Users › Groups for permissions.'),L('Testez chaque changement sur un compte non administrateur.','Test every change with a non-admin account.')],null);}
+ /*__ADMIN_ONLY_END__*/
  ACTIONS.slice(0,6).forEach(function(a,k){F(G4,'action-'+k,k%2?'spark':'doc',a.name,L('Action sous les réponses','Action under answers'),[L('Sous une réponse','Under an answer'),L('icône d’action','action icon')],a.description||L('Action ajoutée par votre organisation.','Action added by your organization.'),[L('Survolez une réponse.','Hover an answer.'),L('Cliquez sur l’icône de l’action.','Click the action icon.')],null);});
  return x;}
 
@@ -1056,14 +1074,15 @@ function finish(){save({status:'completed',index:cur});var g=document.getElement
  var r=document.querySelector('.g-right');r.replaceChildren();var again=E('button','g-close',L('Rouvrir le guide','Reopen guide'));again.type='button';again.addEventListener('click',function(){g.classList.remove('slim');save({status:'active'});location.reload();});
  add(r,E('span','slim-msg',L('Guide fermé','Guide closed')),again);requestAnimationFrame(height);}
 
+function initLanguageButtons(){var wrap=document.querySelector('.g-lang');if(!wrap)return;SUPPORTED.forEach(function(code){if(wrap.querySelector('[data-lang="'+code+'"]'))return;var b=E('button','',code.toUpperCase());b.type='button';b.dataset.lang=code;b.title=LOCALE_NAMES[code]||code;add(wrap,b);});wrap.querySelectorAll('[data-lang]').forEach(function(b){b.title=LOCALE_NAMES[b.dataset.lang]||b.dataset.lang;b.addEventListener('click',function(){if(lang===b.dataset.lang)return;lang=b.dataset.lang;build();active=null;render();});});}
+initLanguageButtons();
 document.querySelectorAll('[data-tab]').forEach(function(b){b.addEventListener('click',function(){tab=b.dataset.tab;sheet=null;render();});});
-document.querySelectorAll('[data-lang]').forEach(function(b){b.addEventListener('click',function(){if(lang===b.dataset.lang)return;lang=b.dataset.lang;build();active=null;render();});});
 document.getElementById('close').addEventListener('click',finish);
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&sheet){sheet=null;render();return;}if(tab!=='tour'||document.getElementById('g').classList.contains('slim'))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
 
 (function start(){var st=load();
  if(st.rev&&st.rev!==REV){updated=true;st.status='active';st.index=0;save({status:'active',index:0});}
- save({rev:REV});if(st.lang==='fr'||st.lang==='en')lang=st.lang;build();
+ save({rev:REV});if(SUPPORTED.indexOf(st.lang)>=0)lang=st.lang;build();
  cur=Number.isInteger(st.index)?Math.max(0,Math.min(steps.length-1,st.index)):0;if(st.tab==='lib')tab='lib';
  render();if(st.status==='completed')finish();
  window.addEventListener('load',height);if('ResizeObserver' in window)new ResizeObserver(height).observe(document.body);})();
@@ -1213,10 +1232,14 @@ class Event:
             True, description="Pin the welcome chat at the top of the user's sidebar when it is created. Users can unpin it; it is never re-pinned afterwards."
         )
         default_language: str = Field(
-            "fr", pattern="^(fr|en)$", description="Language used when the user's own interface language is unknown: 'fr' or 'en'."
+            "fr",
+            min_length=2,
+            max_length=12,
+            pattern=r"^[A-Za-z]{2,3}(?:[-_][A-Za-z0-9]{2,8})?$",
+            description="Fallback locale when the user's Open WebUI language is unavailable. It must exist in the embedded locale catalog.",
         )
         use_user_interface_language: bool = Field(
-            True, description="Use each user's Open WebUI interface language (Settings > General) when it is French or English."
+            True, description="Use each user's Open WebUI interface language (Settings > General) when that locale is embedded in the guide."
         )
         preferred_welcome_model_id: str = Field(
             "", description="Model ID attached to the welcome chat. Only used if the user is allowed to access it; otherwise their first accessible model is used."
@@ -1642,6 +1665,11 @@ class Event:
                 "acceptable_use_url": self._safe_http_url(self.valves.acceptable_use_url),
                 "feedback_url": self._safe_http_url(self.valves.feedback_url),
             },
+            "localization": {
+                "supported": list(SUPPORTED_LOCALES),
+                "names": dict(LOCALE_NAMES),
+                "translations": self._locale_translations(is_admin),
+            },
             "selected_model_id": selected_model_id,
             "available": {
                 "models": bool(models),
@@ -1743,25 +1771,60 @@ class Event:
     def _language_for(self, user) -> str:
         if self.valves.use_user_interface_language:
             settings = self._settings_dict(user)
-            language = str(((settings.get("ui") or {}) if isinstance(settings, dict) else {}).get("language") or "").lower()
-            if language.startswith("fr"):
-                return "fr"
-            if language.startswith("en"):
-                return "en"
-        return self.valves.default_language
+            language = self._normalize_locale(
+                ((settings.get("ui") or {}) if isinstance(settings, dict) else {}).get("language")
+            )
+            if language in SUPPORTED_LOCALES:
+                return language
+            base = language.split("-", 1)[0]
+            if base in SUPPORTED_LOCALES:
+                return base
+        fallback = self._normalize_locale(self.valves.default_language)
+        if fallback in SUPPORTED_LOCALES:
+            return fallback
+        base = fallback.split("-", 1)[0]
+        return base if base in SUPPORTED_LOCALES else "en"
+
+    @staticmethod
+    def _normalize_locale(value) -> str:
+        return str(value or "").strip().lower().replace("_", "-")
 
     def _title(self, snapshot: dict) -> str:
         lang = (snapshot.get("ui") or {}).get("default_language", self.valves.default_language)
-        template = self.valves.welcome_title_en if lang == "en" else self.valves.welcome_title_fr
+        template = self.valves.welcome_title_fr if lang == "fr" else self.valves.welcome_title_en
         title = template.replace("{emoji}", self.valves.title_emoji or "").replace("{product}", snapshot["brand"]["product"])
         return self._plain(title, 120) or "Welcome"
 
     def _render_html(self, snapshot: dict) -> str:
         public = {k: v for k, v in snapshot.items() if not k.startswith("_")}
+        is_admin = bool(((public.get("ui") or {}) if isinstance(public, dict) else {}).get("is_admin"))
+        localization = dict(public.get("localization") or {})
+        localization["translations"] = self._locale_translations(is_admin)
+        public["localization"] = localization
         payload = json.dumps(public, ensure_ascii=False, separators=(",", ":"))
         # Prevent script termination and HTML parser ambiguity inside the JSON script block.
         payload = payload.replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
-        return ONBOARDING_HTML.replace("__SNAPSHOT_JSON__", payload)
+        template = ONBOARDING_HTML
+        admin_start = "/*__ADMIN_ONLY_START__*/"
+        admin_end = "/*__ADMIN_ONLY_END__*/"
+        if is_admin:
+            template = template.replace(admin_start, "").replace(admin_end, "")
+        else:
+            template = re.sub(
+                rf"{re.escape(admin_start)}.*?{re.escape(admin_end)}",
+                "",
+                template,
+                flags=re.DOTALL,
+            )
+        return template.replace("__SNAPSHOT_JSON__", payload)
+
+    @staticmethod
+    def _locale_translations(is_admin: bool) -> dict[str, dict[str, str]]:
+        hidden = set() if is_admin else set(ADMIN_LOCALE_KEYS)
+        return {
+            locale: {key: value for key, value in translations.items() if key not in hidden}
+            for locale, translations in EXTRA_LOCALE_TRANSLATIONS.items()
+        }
 
     def _snapshot_hash(self, snapshot: dict) -> str:
         stable = {k: v for k, v in snapshot.items() if k not in {"generated_at"}}
@@ -1770,7 +1833,7 @@ class Event:
 
     def _fallback_text(self, snapshot: dict) -> str:
         lang = (snapshot.get("ui") or {}).get("default_language", self.valves.default_language)
-        return FALLBACK_TEXT_EN if lang == "en" else FALLBACK_TEXT_FR
+        return FALLBACK_TEXT_FR if lang == "fr" else FALLBACK_TEXT_EN
 
     # ================================================================ Testing
     async def _maybe_run_test(self, app, request) -> None:

@@ -1,8 +1,8 @@
 # Secure Dynamic Onboarding Rich UI
 
-Version **9.1.0**, for Open WebUI **0.11.3 or newer**.
+Version **9.2.0**, for Open WebUI **0.11.3 or newer**.
 
-A bilingual, role-aware Event Function that creates a persistent onboarding chat for every eligible user. The chat contains an interactive Rich UI guide that mirrors Open WebUI, explains only permitted features, and updates in place when permissions or guide content change.
+A multilingual, role-aware Event Function that creates a persistent onboarding chat for every eligible user. The chat contains an interactive Rich UI guide that mirrors Open WebUI, explains only permitted features, and updates in place when permissions or guide content change.
 
 ## What it provides
 
@@ -13,7 +13,8 @@ The guide has two connected experiences:
 
 The interface supports:
 
-- French and English;
+- French and English, with contributor-ready JSON catalogs for more languages;
+- automatic locale selection from the user’s Open WebUI language setting;
 - light and dark themes through the platform preference;
 - Left and Right keyboard navigation;
 - desktop, tablet, and mobile layouts;
@@ -65,6 +66,8 @@ If any catalog source fails or times out, that source becomes empty and its rela
 
 Administrators can see the Administration chapter. Regular users cannot. Globally disabled features remain hidden even for administrators.
 
+The server also removes administrator-only tutorial definitions and their translated strings from regular-user output. Changing `is_admin` in browser DevTools cannot restore content that was never sent, and it never grants a platform permission.
+
 ## Privacy behavior
 
 The browser payload contains only the minimum public metadata needed to build the guide.
@@ -100,6 +103,10 @@ The embedded iframe:
 | File | Purpose |
 | --- | --- |
 | [secure_onboarding.py](secure_onboarding.py) | Complete Event Function and embedded Rich UI |
+| [locales/en.json](locales/en.json) | English source catalog and translation template |
+| [locales/fr.json](locales/fr.json) | French translation catalog |
+| [locales/README.md](locales/README.md) | Translation contribution guide |
+| [sync_locales.py](sync_locales.py) | Catalog validator and single-file embedding tool |
 | [test_secure_onboarding.py](test_secure_onboarding.py) | Python security, permission, and snapshot tests |
 | [smoke_secure_onboarding.mjs](smoke_secure_onboarding.mjs) | Browser DOM test for the full interactive guide |
 | [README.md](README.md) | Installation, rollout, and operating guide |
@@ -135,7 +142,7 @@ Use one real non-production account first.
 
 Save the Valves. A **function.valves_updated** event rebuilds the guide for the test account. Increasing **test_revision** updates the existing test guide instead of creating repeated chats.
 
-Check French and English, light and dark modes, desktop and mobile widths, normal and restricted users, important groups, administrators, hidden features, composer menus, feature workspaces, and the close/reopen behavior.
+Check every embedded language, light and dark modes, desktop and mobile widths, normal and restricted users, important groups, administrators, hidden features, composer menus, feature workspaces, and the close/reopen behavior.
 
 ## Production delivery
 
@@ -218,7 +225,7 @@ Use recreation only when your organization has decided the guide must return.
 | **update_title_on_refresh** | true | Applies the current title during an update |
 | **pin_welcome_chat** | true | Pins only when the guide is first created |
 | **default_language** | fr | Fallback language |
-| **use_user_interface_language** | true | Uses a user’s FR/EN interface setting |
+| **use_user_interface_language** | true | Uses the user’s Open WebUI locale when that catalog is embedded |
 | **preferred_welcome_model_id** | empty | Used only when the user can access that model |
 | **default_group_id** | empty | Optional group for brand-new users only |
 
@@ -267,6 +274,18 @@ Every section is independently switchable. A section still stays hidden when the
 
 Turning off the exposure Valves keeps the general tutorials but removes organization-specific names.
 
+## Adding a translation
+
+Translations live in [`locales/`](locales/). To add Spanish, Catalan, or another language:
+
+1. Copy `locales/en.json` to the locale code, for example `locales/es.json`.
+2. Update `_meta.code`, `_meta.name`, and `_meta.native_name`.
+3. Translate only the values inside `messages`.
+4. Run `python sync_locales.py` to validate and embed the locale into the self-contained Function.
+5. Run `python sync_locales.py --check` and the test suite.
+
+The guide first tries the full Open WebUI locale, then its base language. For example, `es-ES` uses `es` when `es.json` is embedded. Unsupported locales fall back to `default_language`. See [`locales/README.md`](locales/README.md) for the complete contributor workflow.
+
 ## Idempotency and multi-replica behavior
 
 A marker in user settings records the guide chat ID, message ID, version, catalog hash, and refresh data. It prevents duplicate guides.
@@ -281,13 +300,14 @@ From this directory:
 
 ~~~bash
 python -m py_compile secure_onboarding.py
+python sync_locales.py --check
 python -m unittest -v test_secure_onboarding.py
 npm install --no-save --ignore-scripts jsdom@24
 node smoke_secure_onboarding.mjs
 npm uninstall --no-save --ignore-scripts jsdom
 ~~~
 
-The Python suite covers metadata, safe defaults, CSP and script-breakout protection, private snapshot fields, HTTPS links, sanitization, RBAC and global switches, permission-filtered catalogs, test-user gating, marker validation, localization, and public metadata limits.
+The Python suite covers metadata, safe defaults, CSP and script-breakout protection, private snapshot fields, HTTPS links, sanitization, RBAC and global switches, server-side administrator-content stripping, permission-filtered catalogs, test-user gating, marker validation, localization, and public metadata limits.
 
 The DOM test renders the full administrator tour, walks every step, switches language, opens and closes a feature tutorial, and verifies the dismissed state.
 
@@ -311,7 +331,7 @@ Configure shared Redis. Process-local fallback cannot coordinate separate proces
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md). Released as `secure-onboarding-v9.1.0`; see [RELEASING.md](../../../RELEASING.md) for the release process.
+See [CHANGELOG.md](CHANGELOG.md). The current release is `secure-onboarding-v9.2.0`; see [RELEASING.md](../../../RELEASING.md) for the release process.
 
 ## License
 

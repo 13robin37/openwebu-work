@@ -25,7 +25,7 @@ const sectionFlags = [
 
 const snapshot = {
   schema: 2,
-  template_revision: 9,
+  template_revision: 10,
   guide_revision: 1,
   update_notes: { fr: "", en: "" },
   generated_at: 1,
@@ -46,6 +46,15 @@ const snapshot = {
     privacy_url: "",
     acceptable_use_url: "",
     feedback_url: ""
+  },
+  localization: {
+    supported: ["fr", "en", "es"],
+    names: { fr: "Français", en: "English", es: "Español" },
+    translations: {
+      es: {
+        "Visite guidée\u001fGuided tour": "Visita guiada"
+      }
+    }
   },
   selected_model_id: "model-1",
   available: {
@@ -145,6 +154,11 @@ document.querySelector("[data-lang='fr']").click();
 assert.equal(document.documentElement.lang, "fr");
 assert.equal(document.querySelector("[data-lang='fr']").getAttribute("aria-pressed"), "true");
 assert.match(document.querySelector("[data-tab='tour']").textContent, /Visite guidée/);
+
+document.querySelector("[data-lang='es']").click();
+assert.equal(document.documentElement.lang, "es");
+assert.equal(document.querySelector("[data-lang='es']").getAttribute("aria-pressed"), "true");
+assert.match(document.querySelector("[data-tab='tour']").textContent, /Visita guiada/);
 
 document.getElementById("close").click();
 assert.ok(document.getElementById("g").classList.contains("slim"), "dismissed state did not render");
